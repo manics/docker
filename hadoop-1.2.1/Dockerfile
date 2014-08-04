@@ -15,6 +15,13 @@ RUN sed -i.bak -re 's/localhost:([0-9]+)/0.0.0.0:\1/' \
 	/etc/hadoop/hdfs-site.xml
 RUN sed -i.bak -re 's/localhost:([0-9]+)/0.0.0.0:\1/' \
 	/etc/hadoop/mapred-site.xml
+RUN sed -i.bak -re 's/<\/configuration>/\
+	<property>\
+	<name>hadoop.rpc.socket.factory.class.default<\/name>\
+	<value>org.apache.hadoop.net.StandardSocketFactory<\/value>\
+	<final>true<\/final>\
+	<\/property>\n\
+<\/configuration>/' /etc/hadoop/core-site.xml
 
 RUN useradd omero && echo omero:omero | chpasswd
 
