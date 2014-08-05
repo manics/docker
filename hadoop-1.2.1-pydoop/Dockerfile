@@ -7,8 +7,8 @@ RUN yum install -y java-1.7.0-openjdk-devel boost-python-devel openssl-devel \
 	python-pip python-importlib python-devel \
 	git gcc gcc-c++
 RUN JAVA_HOME=/etc/alternatives/java_sdk HADOOP_CONF_DIR=/etc/hadoop \
-	pip install git+https://github.com/manics/pydoop.git@compile_mac_10_9
+	pip install git+https://github.com/manics/pydoop.git@omero-fixes
 
-EXPOSE 8020 9000 50010 50030 50070 50075 50470 51111
-CMD ["/bin/bash", "-e", "/run.sh"]
+#EXPOSE
+#CMD
 
