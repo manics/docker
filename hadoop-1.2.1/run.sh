@@ -29,5 +29,7 @@ fi
 
 if [ $INIT -eq 1 ]; then
 	echo $IP
+	#sleep 5
+	#tail -F /var/log/hadoop/*/*.log
 	bash
 fi
