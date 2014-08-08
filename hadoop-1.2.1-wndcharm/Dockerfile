@@ -1,4 +1,4 @@
-FROM hadoop-1.2.1-pydoop
+FROM omedocker/hadoop-1.2.1-pydoop
 MAINTAINER Simon Li "spli@dundee.ac.uk"
 
 RUN yum install -y gcc-c++ git swig libtiff-devel fftw-static fftw-devel \

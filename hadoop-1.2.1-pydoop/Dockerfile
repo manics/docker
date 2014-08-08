@@ -1,4 +1,4 @@
-FROM hadoop-1.2.1
+FROM omedocker/hadoop-1.2.1
 MAINTAINER Simon Li "spli@dundee.ac.uk"
 
 RUN yum install -y \
