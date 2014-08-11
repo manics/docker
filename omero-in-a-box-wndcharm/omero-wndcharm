@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Ensure the omero-wndcharm scripts are in the OMERO.server scripts directory
+
+set -eux
+
+OMERO_PREFIX=/opt/omero
+OMERO_WNDCHARM_PREFIX=/opt/omero-wndcharm
+
+if [ ! -d $OMERO_PREFIX/scripts/wndcharm ]
+then
+    echo "Installing omero-wndcharm scripts"
+    ln -s $OMERO_WNDCHARM_PREFIX/scripts $OMERO_PREFIX/lib/scripts/wndcharm
+fi
