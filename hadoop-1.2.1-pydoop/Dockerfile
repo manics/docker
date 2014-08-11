@@ -9,8 +9,8 @@ RUN yum install -y \
 #RUN yum install -y \
 RUN yum --enablerepo centosplus install -y \
 	java-1.7.0-openjdk-devel boost-python-devel openssl-devel \
-	python-pip python-importlib python-devel \
-	git gcc gcc-c++
+	python-pip python-importlib python-devel python-argparse \
+	git gcc gcc-c++ patch
 RUN JAVA_HOME=/etc/alternatives/java_sdk HADOOP_CONF_DIR=/etc/hadoop \
 	pip install git+https://github.com/manics/pydoop.git@omero-fixes
 
