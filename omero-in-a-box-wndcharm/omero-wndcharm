@@ -7,6 +7,8 @@ set -eux
 OMERO_PREFIX=/opt/omero
 OMERO_WNDCHARM_PREFIX=/opt/omero-wndcharm
 
+/wait_on_omero
+
 if [ ! -d $OMERO_PREFIX/scripts/wndcharm ]
 then
     echo "Installing omero-wndcharm scripts"
