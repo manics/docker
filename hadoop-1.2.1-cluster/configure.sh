@@ -1,13 +1,33 @@
 #!/bin/bash
 
+set -e
+
 #master, namenode, jobtracker, slave
-role=
+roles="$@"
+[ -z "$roles" ] && roles="master slave namenode jobtracker bash"
+
+role_namenode=
+role_namenode2=
+role_jobtracker=
+role_master=
+role_slave=
+run_bash=
+
+[[ $roles =~ (^|\ )namenode($|\ ) ]] && role_namenode=1
+[[ $roles =~ (^|\ )namenode2($|\ ) ]] && role_namenode2=1
+[[ $roles =~ (^|\ )jobtracker($|\ ) ]] && role_jobtracker=1
+[[ $roles =~ (^|\ )master($|\ ) ]] && role_master=1
+[[ $roles =~ (^|\ )slave($|\ ) ]] && role_slave=1
+[[ $roles =~ (^|\ )bash($|\ ) ]] && run_bash=1
+
+
 # Are namenode and jobtracker also master?
 
 IP=$(ip addr show eth0 | sed -nre 's/.*inet ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/p')
 NAMENODE=$IP
 NAMENODE2=$IP
 JOBTRACKER=$IP
+MASTERS=$IP
 SLAVES=$IP
 
 service sshd start
@@ -30,46 +50,59 @@ sed -i.bak -re 's/<\/configuration>/\
 usermod -d /var/lib/hadoop/hdfs hdfs
 usermod -d /var/lib/hadoop/mapred mapred
 
-for u in hdfs mapred; do
+for u in hdfs mapred root; do
 	d=`eval echo ~$u`
+	[ -d $d/.ssh ] && continue
 	mkdir $d/.ssh
 	chmod 700 $d/.ssh
-	cp hadoop.key $d/.ssh/id_rsa
-	cp hadoop.key.pub $d/.ssh/authorized_keys
+	cp ~root/hadoop.key $d/.ssh/id_rsa
+	cp ~root/hadoop.key.pub $d/.ssh/authorized_keys
 	(echo -n "* " && cat /etc/ssh/ssh_host_rsa_key.pub) > $d/.ssh/known_hosts
-	chown -R $u $d
+	chown -R $u $d/.ssh
 done
 
 
 
-#if [ $role = namenode ]; then
+if [ -n "$role_namenode" ]; then
 	/etc/init.d/hadoop-namenode format
-#fi
+fi
 
 # Distributed, but namenode only:
 # http://stackoverflow.com/questions/19779405/hadoop-conf-masters-and-conf-slaves-on-jobtracker
-#if [ $role = namenode ]; then
-	echo "$IP" > /etc/hadoop/masters
-	echo "$SLAVES" > /etc/hadoop/slaves
-#fi
+if [ -n "$role_namenode" ]; then
+	rm /etc/hadoop/masters /etc/hadoop/slaves
+	for addr in $MASTERS; do
+		echo $addr >> /etc/hadoop/masters
+	done
+	for addr in $SLAVES; do
+		echo $addr >> /etc/hadoop/slaves
+	done
+fi
 
 # Actually start-dfs and start-mapred can be run from the master node
 # but does master mean any/all master nodes, or only one of them?
 # This suggests namenode and jobtracker are different:
 # http://hadoop.apache.org/docs/r1.2.1/cluster_setup.html
-#if [ $role = namenode ]; then
+if [ -n "$role_namenode" ]; then
 	su - hdfs -c /usr/sbin/start-dfs.sh
 	# I think this uses the HDFS API, so can be run anywhere:
 	hadoop-setup-hdfs.sh --mapreduce-user=mapred
-#fi
+fi
 
-#if [ $role = jobtracker ]; then
+if [ -n "$role_jobtracker" ]; then
 	su - mapred -c /usr/sbin/start-mapred.sh
-#fi
+fi
 
 # Only run once, so might as well use the namenode
-#if [ $role = namenode ]; then
+if [ -n "$role_namenode" ]; then
 	hadoop-create-user.sh omero
-#fi
+fi
 
 echo $IP
+
+if [ -n "$run_bash" ]; then
+	bash -l
+else
+	tail -F /var/log/hadoop/*/*.log
+fi
+
