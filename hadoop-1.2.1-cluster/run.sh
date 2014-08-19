@@ -32,15 +32,22 @@ getvars SLAVE
 SLAVE_IPS="$RET"
 
 if [ $# -lt 1 ]; then
+	exec /tail_hadoop_logs.sh
+elif [ "$1" = "bash" ]; then
 	env
 	service sshd start
 	echo IP: $IP
 	echo Master IPs: $MASTER_IPS
 	echo Slave IPs: $SLAVE_IPS
 	export IP MASTER_IPS SLAVE_IPS
-	bash
-elif [ "$1" = "default" ]; then
-	/configure.sh
+	shift
+	exec bash "$@"
+elif [ "$1" = "deploy" ]; then
+	/deploy-configure.sh
+	if [ $# -gt 1 ]; then
+		shift
+		exec bash "$@"
+	fi
 else
-	/configure.sh "$@"
+	exec "$@"
 fi
