@@ -30,6 +30,7 @@ SLAVE_IPS="$RET"
 
 if [ $# -lt 1 ]; then
 	env
+	service sshd start
 	echo $SLAVE_IPS
 	export SLAVE_IPS
 	bash

@@ -23,11 +23,8 @@ RUN sed -i.bak \
 	's/session    required     pam_loginuid.so/session    optional     pam_loginuid.so/' \
 	/etc/pam.d/sshd
 
-# Create the server host key
-RUN service sshd start && service sshd stop
-
-# All nodes have the same keys
-RUN ssh-keygen -t rsa -N "" -f ~root/hadoop.key
+ADD setup_ssh.sh /
+RUN /setup_ssh.sh
 
 ADD configure.sh /
 ADD run.sh /

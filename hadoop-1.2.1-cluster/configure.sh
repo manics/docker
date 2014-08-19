@@ -4,7 +4,7 @@ set -e
 
 #master, namenode, jobtracker, slave
 roles="$@"
-[ -z "$roles" ] && roles="master slave namenode jobtracker bash"
+[ -z "$roles" ] && roles="master slave namenode namenode2 jobtracker bash"
 
 role_namenode=
 role_namenode2=
@@ -24,11 +24,11 @@ run_bash=
 # Are namenode and jobtracker also master?
 
 IP=$(ip addr show eth0 | sed -nre 's/.*inet ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/p')
-NAMENODE=$IP
-NAMENODE2=$IP
-JOBTRACKER=$IP
-MASTERS=$IP
-SLAVES=$IP
+[ -z "$NAMENODE" ] && NAMENODE=$IP
+[ -z "$NAMENODE2" ] && NAMENODE2=$IP
+[ -z "$JOBTRACKER" ] && JOBTRACKER=$IP
+[ -z "$MASTERS" ] && MASTERS=$IP
+[ -z "$SLAVES" ] && SLAVES=$IP
 
 service sshd start
 
@@ -45,22 +45,6 @@ sed -i.bak -re 's/<\/configuration>/\
 	<final>true<\/final>\
 	<\/property>\n\
 <\/configuration>/' /etc/hadoop/core-site.xml
-
-# Set a home-dir so that we can create ssh keys
-usermod -d /var/lib/hadoop/hdfs hdfs
-usermod -d /var/lib/hadoop/mapred mapred
-
-for u in hdfs mapred root; do
-	d=`eval echo ~$u`
-	[ -d $d/.ssh ] && continue
-	mkdir $d/.ssh
-	chmod 700 $d/.ssh
-	cp ~root/hadoop.key $d/.ssh/id_rsa
-	cp ~root/hadoop.key.pub $d/.ssh/authorized_keys
-	(echo -n "* " && cat /etc/ssh/ssh_host_rsa_key.pub) > $d/.ssh/known_hosts
-	chown -R $u $d/.ssh
-done
-
 
 
 if [ -n "$role_namenode" ]; then
