@@ -44,3 +44,5 @@ for host in $SLAVES; do
 done
 
 NAMENODE=$IP NAMENODE2=$IP JOBTRACKER=$IP MASTERS=$IP SLAVES="$SLAVE_IPS" /configure.sh master namenode namenode2 jobtracker
+
+echo "IP: $IP"

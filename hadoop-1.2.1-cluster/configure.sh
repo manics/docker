@@ -4,21 +4,19 @@ set -e
 
 #master, namenode, jobtracker, slave
 roles="$@"
-[ -z "$roles" ] && roles="master slave namenode namenode2 jobtracker bash"
+[ -z "$roles" ] && roles="master slave namenode namenode2 jobtracker"
 
 role_namenode=
 role_namenode2=
 role_jobtracker=
 role_master=
 role_slave=
-run_bash=
 
 [[ $roles =~ (^|\ )namenode($|\ ) ]] && role_namenode=1
 [[ $roles =~ (^|\ )namenode2($|\ ) ]] && role_namenode2=1
 [[ $roles =~ (^|\ )jobtracker($|\ ) ]] && role_jobtracker=1
 [[ $roles =~ (^|\ )master($|\ ) ]] && role_master=1
 [[ $roles =~ (^|\ )slave($|\ ) ]] && role_slave=1
-[[ $roles =~ (^|\ )bash($|\ ) ]] && run_bash=1
 
 
 # Are namenode and jobtracker also master?
@@ -83,9 +81,3 @@ if [ -n "$role_namenode" ]; then
 fi
 
 echo $IP
-
-if [ -n "$run_bash" ]; then
-	bash -l
-else
-	tail -F /var/log/hadoop/*/*.log
-fi
