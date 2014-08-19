@@ -1,4 +1,4 @@
-FROM centos-dnsmasq
+FROM omedocker/centos-dnsmasq
 MAINTAINER Simon Li "spli@dundee.ac.uk"
 
 RUN yum -y install java-1.7.0-openjdk \
