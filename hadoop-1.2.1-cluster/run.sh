@@ -25,18 +25,22 @@ function getvars {
 	done
 }
 
+IP=$(ip addr show eth0 | sed -nre 's/.*inet ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/p')
+getvars MASTER
+MASTER_IPS="$RET"
 getvars SLAVE
 SLAVE_IPS="$RET"
 
 if [ $# -lt 1 ]; then
 	env
 	service sshd start
-	echo $SLAVE_IPS
-	export SLAVE_IPS
+	echo IP: $IP
+	echo Master IPs: $MASTER_IPS
+	echo Slave IPs: $SLAVE_IPS
+	export IP MASTER_IPS SLAVE_IPS
 	bash
 elif [ "$1" = "default" ]; then
 	/configure.sh
 else
 	/configure.sh "$@"
 fi
-

@@ -89,4 +89,3 @@ if [ -n "$run_bash" ]; then
 else
 	tail -F /var/log/hadoop/*/*.log
 fi
-
