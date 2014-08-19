@@ -27,6 +27,7 @@ ADD setup_ssh.sh /
 RUN /setup_ssh.sh
 
 ADD configure.sh /
+ADD deploy-configure.sh /
 ADD run.sh /
 
 EXPOSE 8020 9000 50010 50030 50070 50075 50470 51111
