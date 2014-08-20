@@ -75,8 +75,10 @@ if [ -n "$role_jobtracker" ]; then
 	su - mapred -c /usr/sbin/start-mapred.sh
 fi
 
-# Only run once, so might as well use the namenode
+# Needs to correspond to a system user otherwise you'll see lots of non-fatal
+# warnings in the logs
 if [ -n "$role_namenode" ]; then
+	useradd omero
 	hadoop-create-user.sh omero
 fi
 
