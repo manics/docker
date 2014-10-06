@@ -54,6 +54,8 @@ RUN echo 'PATH=/opt/texlive/bin/x86_64-linux:$PATH' > \
 RUN curl -L http://ci.openmicroscopy.org/job/ICE-centos6-archive/lastSuccessfulBuild/artifact/ice-multi-archive/centos6-ice-multi.tar.gz | \
 	tar -zxf -
 
+ADD multi-config.sh /opt/
+
 RUN mkdir /build
 VOLUME /build
 WORKDIR /build
