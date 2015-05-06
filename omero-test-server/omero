@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# This script is run by Supervisor to start OMERO in foreground mode
+
+set -e
+set -u
+set -x
+
+export OMERO_HOME=/opt/omero
+export PATH=$OMERO_HOME/bin:$PATH
+
+
+i="0"
+
+while [ $i -lt 10 ]
+do
+    [ -d /opt/omero/var ] && sleep 2 && break
+    sleep 2
+    i=$[$i+1]
+done
+
+cd /opt/omero
+bin/omero config set omero.db.poolsize 50
+bin/omero admin jvmcfg || echo jvmcfg not available
+
+/wait_on_postgresql # Until we have supervisord events
+
+psql -hlocalhost -Uomero omero -c "select * from dbpatch" < /dev/null || {
+    createdb omero
+    bin/omero db script "" "" ome -f- | psql -hlocalhost -Uomero omero
+}
+
+exec icegridnode --nochdir --Ice.Config=etc/internal.cfg,etc/master.cfg --deploy etc/grid/default.xml

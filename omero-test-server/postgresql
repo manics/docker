@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# This script is run by Supervisor to start PostgreSQL 9.1 in foreground mode
+
+set -e
+set -u
+set -x
+export PGDATA=/data/postgresql
+export PGCONF=$PGDATA/postgresql.conf
+export PGBIN=/usr/lib/postgresql/9.1/bin/
+
+i="0"
+
+while [ $i -lt 10 ]
+do
+    [ -f $PGCONF ] && sleep 2 && break
+    sleep 2
+    i=$[$i+1]
+done
+
+exec $PGBIN/postgres -c config_file=$PGCONF

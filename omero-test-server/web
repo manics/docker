@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# This script is run by Supervisor to start OMERO in foreground mode
+
+set -e
+set -u
+set -x
+
+/wait_on_postgresql
+/wait_on_omero
+
+cd /opt/omero
+bin/omero web syncmedia
+
+cd lib/python/omeroweb
+export PYTHONPATH=.:/opt/omero/lib/python
+exec python manage.py runfcgi workdir=./ method=prefork host=0.0.0.0 port=4080 \
+    pidfile=/opt/omero/var/django.pid daemonize=false \
+    maxchildren=5 minspare=1 maxspare=5 maxrequests=400

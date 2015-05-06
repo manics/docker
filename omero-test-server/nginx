@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# This script is run by Supervisor to start nginx in foreground mode
+
+export CONF=/etc/nginx/nginx.conf
+export OMERO_HOME=/opt/omero
+export PATH=$OMERO_HOME/bin:$PATH
+
+rm -rf /etc/nginx/conf.d/*
+rm -rf /etc/nginx/sites-available/*
+rm -rf /etc/nginx/sites-enabled/*
+
+/wait_on_omero
+su omero -c "/opt/omero/bin/omero web config nginx --system --http=80" >> /etc/nginx/conf.d/omero.conf
+
+grep -q "daemon off" $CONF || {
+    (echo "daemon off;"; cat $CONF) > /tmp/nginx.conf
+    mv /tmp/nginx.conf $CONF
+}
+exec /usr/sbin/nginx
