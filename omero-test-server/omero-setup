@@ -1,35 +1,31 @@
 #!/bin/bash
 
-# This script is run by Supervisor to start OMERO in foreground mode
+# Setup and run omero
 
-set -e
-set -u
-set -x
+set -eux
 
-export OMERO_HOME=/opt/omero
-export PATH=$OMERO_HOME/bin:$PATH
-BRANCH=OMERO-5.0-latest
+OPTS="${OMERO_SERVER_ZIP:-} $@"
 
-mkdir -p /data/OMERO
-chown omero:omero /data/OMERO
+while ! psql -Uomero -l > /dev/null; do
+    echo 'Waiting for postgres'
+    sleep 5
+done
 
-if [ ! -d /opt/omero ]
-then
-    cd /tmp
-    /home/omero/venv/bin/omego download server --branch=$BRANCH --labels ICE=3.4
-    rm OMERO.server*zip
-    chown -R omero:omero OMERO.server*
-    mv OMERO.server* /opt/
-    ln -s /opt/OMERO.server* /opt/omero
+#echo "CREATE USER omero PASSWORD 'omero'" | su - omero -c psql
+su - omero -c "createdb -E UTF8 -O omero omero"
+su - omero -c "psql -c \"ALTER ROLE omero WITH PASSWORD 'omero'\""
+
+if [ ! -d /OMERO ]; then
+    echo "Creating omero data directory"
+    mkdir -p /data/OMERO
+    chown -R omero /data/OMERO
+    ln -s /data/OMERO /OMERO
 fi
 
-rm -rf /opt/omero/var
-mkdir -p /opt/omero/var
-mkdir -p /opt/omero/var/master
-mkdir -p /opt/omero/var/registry
+su - omero -c \
+    "omego install --initdb --dbname omero --sym OMERO.server $OPTS"
 
-mkdir -p /data/logs
-chown -R omero:omero /data/logs
-chown -R omero:omero /opt/omero/var/
+OMERO=~omero/OMERO.server/bin/omero
+su - omero -c "$OMERO web config nginx" > /etc/nginx/conf.d/omero-web.conf
 
-ln -s /data/logs /opt/omero/var/log
+supervisorctl restart nginx

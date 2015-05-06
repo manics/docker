@@ -2,20 +2,24 @@
 
 # This script is run by Supervisor to start PostgreSQL 9.1 in foreground mode
 
-set -e
-set -u
-set -x
-export PGDATA=/data/postgresql
-export PGCONF=$PGDATA/postgresql.conf
-export PGBIN=/usr/lib/postgresql/9.1/bin/
+set -eux
 
-i="0"
+PGVER=$(psql --version | sed -re 's/^.+ ([0-9]\.+[0-9])\.[0-9]$/\1/')
+PGDATA=/data/postgresql
+PGBIN=/usr/lib/postgresql/$PGVER/bin
 
-while [ $i -lt 10 ]
-do
-    [ -f $PGCONF ] && sleep 2 && break
-    sleep 2
-    i=$[$i+1]
-done
+if [ ! -f $PGDATA/PG_VERSION ]; then
+    echo "Initialising PostgreSQL"
+    install -d -m 755 -o omero -g omero $PGDATA
+    su - omero -c "$PGBIN/initdb -D $PGDATA -E UTF8"
+fi
 
-exec $PGBIN/postgres -c config_file=$PGCONF
+echo "listen_addresses = '*'" >> "$PGDATA/postgresql.conf"
+echo sed -i -re 's/^(host.*)trust/\1md5/' "$PGDATA/pg_hba.conf"
+echo 'host all all 10.0.0.0/8 md5' >> "$PGDATA/pg_hba.conf"
+echo 'host all all 172.16.0.0/12 md5' >> "$PGDATA/pg_hba.conf"
+echo 'host all all 192.168.0.0/16 md5' >> "$PGDATA/pg_hba.conf"
+
+chown -R omero /var/run/postgresql
+
+exec su omero -c "exec $PGBIN/postgres -D $PGDATA"
