@@ -2,4 +2,8 @@
 if [ -n "$PASSWORD" ] ; then
     echo "gridftp:$PASSWORD" | chpasswd
 fi
-exec /usr/sbin/sshd -eD
+if [ $# -eq 0 ]; then
+    exec /usr/sbin/sshd -eD
+else
+    exec bash -c "$@"
+fi

@@ -15,3 +15,11 @@ On the client connect to `gridftp@hostname`:
     # Slashes are important, destination dir must exist
     globus-url-copy -v -vb -fast -p 4 -r -sync file:/path/to/dir/ sshftp://gridftp@hostname/home/gridftp/dir/
 
+
+Client mode
+-----------
+
+To use this as an interactive client it is safer to run as a non-root user:
+
+    docker run -it -u gridftp -v /volume:/home/gridftp/data gridftp bash
+
